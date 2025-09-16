@@ -23,7 +23,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased" suppressHydrationWarning>
         <div className="flex min-h-screen w-full flex-col">
           <Header />
           <main className="flex flex-1 flex-col p-4 md:p-8 lg:p-10">
