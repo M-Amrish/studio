@@ -19,7 +19,8 @@ import {
   DollarSign,
   Download,
   ShieldCheck,
-  Polaroid
+  Polaroid,
+  Info
 } from 'lucide-react';
 import { PotentialChart } from './potential-chart';
 import { CostBenefitChart } from './cost-benefit-chart';
@@ -38,6 +39,7 @@ type ResultsDashboardProps = {
     location: string;
     feasibility: string;
     confidenceScore: number;
+    confidenceReason: string;
     structureType: string;
     tankMaterial: string;
     waterCollectionEstimate: number;
@@ -77,6 +79,7 @@ export function ResultsDashboard({ data }: ResultsDashboardProps) {
           <div className="text-center md:text-right">
              <p className="text-sm">CONFIDENCE SCORE</p>
              <p className="text-6xl font-bold">{data.confidenceScore}%</p>
+             <p className="text-xs text-primary-foreground/80 mt-1 flex items-center justify-end gap-1"><Info className="h-3 w-3" /> {data.confidenceReason}</p>
           </div>
         </CardContent>
          <CardFooter className="flex justify-end">

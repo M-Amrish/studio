@@ -60,6 +60,7 @@ function performAssessment(params: AssessmentParams) {
     location: params.location,
     feasibility: 'YES',
     confidenceScore: 95.2,
+    confidenceReason: 'Based on high rainfall & sufficient rooftop area.',
     structureType: 'Rooftop Rainwater Harvesting with Recharge Pit',
     tankMaterial: 'RCC (Reinforced Cement Concrete)',
     waterCollectionEstimate: Math.round(waterCollectionEstimate),
