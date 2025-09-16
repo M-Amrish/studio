@@ -23,9 +23,9 @@ export function CostBenefitChart({ investment, savings }: CostBenefitChartProps)
         <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis unit="₹" tickFormatter={(value) => new Intl.NumberFormat('en-IN', { notation: 'compact', compactDisplay: 'short' }).format(value as number)} />
+            <YAxis unit="₹" tickFormatter={(value) => new Intl.NumberFormat('en-IN').format(value as number)} />
             <Tooltip
-                formatter={(value: number) => `₹${value.toLocaleString()}`}
+                formatter={(value: number) => `₹${new Intl.NumberFormat('en-IN').format(value)}`}
                 contentStyle={{
                     background: "hsl(var(--background))",
                     borderColor: "hsl(var(--border))",
