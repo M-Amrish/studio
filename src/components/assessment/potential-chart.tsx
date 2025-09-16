@@ -1,6 +1,6 @@
 "use client"
 
-import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip, Legend } from "recharts"
+import { Sector, Pie, PieChart, ResponsiveContainer, Tooltip, Legend, Cell } from "recharts"
 
 interface PotentialChartProps {
     harvested: number;
@@ -9,46 +9,45 @@ interface PotentialChartProps {
     recharged: number;
 }
 
+const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+
 export function PotentialChart({ harvested, demand, stored, recharged}: PotentialChartProps) {
   const data = [
-    {
-      subject: "Harvested",
-      value: harvested,
-      fullMark: Math.max(harvested, demand),
-    },
-    {
-      subject: "Demand",
-      value: demand,
-      fullMark: Math.max(harvested, demand),
-    },
-    {
-      subject: "Stored",
-      value: stored,
-      fullMark: Math.max(harvested, demand),
-    },
-    {
-      subject: "Recharged",
-      value: recharged,
-      fullMark: Math.max(harvested, demand),
-    },
+    { name: "Harvested", value: harvested },
+    { name: "Demand", value: demand },
+    { name: "Stored", value: stored },
+    { name: "Recharged", value: recharged },
   ]
+
+  const total = data.reduce((acc, entry) => acc + entry.value, 0);
 
   return (
     <div className="h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
-            <PolarGrid />
-            <PolarAngleAxis dataKey="subject" />
-            <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} tickFormatter={(value) => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(value as number)} />
-            <Tooltip
-                contentStyle={{
-                    background: "hsl(var(--background))",
-                    borderColor: "hsl(var(--border))",
-                }}
-            />
-            <Legend />
-            <Radar name="Water Balance" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.6} />
-        </RadarChart>
+            <PieChart>
+                <Tooltip
+                    contentStyle={{
+                        background: "hsl(var(--background))",
+                        borderColor: "hsl(var(--border))",
+                    }}
+                    formatter={(value: number, name: string) => [`${value.toLocaleString()} L`, name]}
+                />
+                <Legend />
+                <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    isAnimationActive={true}
+                >
+                {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+                </Pie>
+            </PieChart>
         </ResponsiveContainer>
     </div>
   )
