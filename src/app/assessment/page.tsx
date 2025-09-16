@@ -13,12 +13,32 @@ type AssessmentParams = {
   tankSpaceWidth: string;
 };
 
-// Mock local data
-const MOCK_RAINFALL = 800; // mm/year
 const MOCK_GROUNDWATER_LEVEL = 10; // meters
 const WATER_DEMAND_PER_PERSON = 135; // liters/day
 const COST_PER_CUBIC_METER_STORAGE_RCC = 4000;
 const COST_OF_WATER_PER_KL = 20; // INR per 1000 liters
+
+async function getAnnualPrecipitation(latitude: number, longitude: number): Promise<number> {
+    try {
+        const today = new Date();
+        const endDate = new Date(today.getFullYear(), 0, 0).toISOString().split('T')[0]; // Dec 31 of last year
+        const startDate = new Date(today.getFullYear() - 1, 0, 1).toISOString().split('T')[0]; // Jan 1 of last year
+
+        const url = `https://archive-api.open-meteo.com/v1/era5?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&daily=precipitation_sum&timezone=GMT`;
+        const response = await fetch(url, { next: { revalidate: 3600 * 24 } }); // Revalidate once a day
+        if (!response.ok) {
+            console.error("Failed to fetch precipitation data");
+            return 800; // Fallback to mock data
+        }
+        const data = await response.json();
+        const totalPrecipitation = data.daily.precipitation_sum.reduce((acc: number, daily: number) => acc + daily, 0);
+        return Math.round(totalPrecipitation);
+    } catch (error) {
+        console.error("Error fetching precipitation data:", error);
+        return 800; // Fallback to mock data on error
+    }
+}
+
 
 function getRunoffCoefficient(rooftopType: string) {
     switch (rooftopType) {
@@ -35,14 +55,17 @@ function getRunoffCoefficient(rooftopType: string) {
     }
 }
 
-function performAssessment(params: AssessmentParams) {
+async function performAssessment(params: AssessmentParams) {
+  const [lat, lon] = params.location.split(',').map(s => parseFloat(s.trim()));
+  const annualRainfall = await getAnnualPrecipitation(lat || 12.9716, lon || 77.5946); // Default to Bangalore if parsing fails
+
   const roofLength = parseFloat(params.roofLength);
   const roofWidth = parseFloat(params.roofWidth);
   const familyMembers = parseInt(params.familyMembers);
   const runoffCoefficient = getRunoffCoefficient(params.rooftopType);
 
   const rooftopArea = roofLength * roofWidth;
-  const waterCollectionEstimate = rooftopArea * (MOCK_RAINFALL / 1000) * runoffCoefficient * 1000; // in liters
+  const waterCollectionEstimate = rooftopArea * (annualRainfall / 1000) * runoffCoefficient * 1000; // in liters
 
   const dailyDemand = familyMembers * WATER_DEMAND_PER_PERSON;
   const annualDemand = dailyDemand * 365;
@@ -70,19 +93,19 @@ function performAssessment(params: AssessmentParams) {
       investment: Math.round(investment),
       annualSavings: Math.round(annualSavings),
     },
-    localRainfall: MOCK_RAINFALL,
+    localRainfall: annualRainfall,
     groundwaterLevel: MOCK_GROUNDWATER_LEVEL,
     rooftopArea,
     annualDemand: Math.round(annualDemand),
   };
 }
 
-export default function AssessmentResultsPage({
+export default async function AssessmentResultsPage({
   searchParams,
 }: {
   searchParams: AssessmentParams;
 }) {
-  const assessmentData = performAssessment(searchParams);
+  const assessmentData = await performAssessment(searchParams);
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
