@@ -12,8 +12,12 @@ import {
   Ruler,
   Info,
   LocateFixed,
-  Loader2
+  Loader2,
+  Upload,
+  Sparkles,
+  FileImage,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +39,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/header';
+import { extractDimensionsFromBlueprint } from '@/app/actions';
 
 const formSchema = z.object({
   projectName: z.string().min(2, {
@@ -46,6 +51,7 @@ const formSchema = z.object({
   familyMembers: z.coerce.number().min(1, {
     message: 'Must have at least 1 family member.',
   }),
+  blueprint: z.any().optional(),
   roofLength: z.coerce.number().positive({
     message: 'Roof length must be a positive number.',
   }),
@@ -64,6 +70,8 @@ export default function AssessmentPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [blueprintPreview, setBlueprintPreview] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -110,6 +118,53 @@ export default function AssessmentPage() {
       }
     );
   }
+
+  const handleBlueprintChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBlueprintPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setBlueprintPreview(null);
+    }
+  };
+  
+  const handleAnalyzeBlueprint = async () => {
+    if (!blueprintPreview) {
+        toast({
+            variant: 'destructive',
+            title: 'No Blueprint Selected',
+            description: 'Please upload a blueprint image first.',
+        });
+        return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+        const result = await extractDimensionsFromBlueprint({ blueprintDataUri: blueprintPreview });
+        if (result.roofLength && result.roofWidth) {
+            form.setValue('roofLength', result.roofLength, { shouldValidate: true });
+            form.setValue('roofWidth', result.roofWidth, { shouldValidate: true });
+            toast({
+                title: 'Analysis Complete',
+                description: 'Rooftop dimensions have been extracted and filled in.',
+            });
+        } else {
+            throw new Error('AI could not determine dimensions.');
+        }
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Analysis Failed',
+            description: 'Could not extract dimensions from the blueprint. Please enter them manually.',
+        });
+    } finally {
+        setIsAnalyzing(false);
+    }
+  };
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const params = new URLSearchParams(
@@ -220,39 +275,82 @@ export default function AssessmentPage() {
                         <h3 className="font-semibold text-lg text-primary">
                           Building Dimensions
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="roofLength"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Roof Length (meters)</FormLabel>
-                                <FormControl>
-                                  <div className="relative">
-                                    <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input type="number" placeholder="Enter length" {...field} className="pl-9"/>
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="roofWidth"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Roof Width (meters)</FormLabel>
-                                <FormControl>
-                                  <div className="relative">
-                                    <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input type="number" placeholder="Enter width" {...field} className="pl-9" />
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Upload Blueprint</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                     <FormField
+                                        control={form.control}
+                                        name="blueprint"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel
+                                                htmlFor="blueprint-upload"
+                                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted"
+                                            >
+                                                {blueprintPreview ? (
+                                                    <Image src={blueprintPreview} alt="Blueprint preview" width={128} height={128} className="object-contain h-full w-full"/>
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                        <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                                        <p className="mb-2 text-sm text-center text-muted-foreground">
+                                                            <span className="font-semibold">Click to upload</span> or drag and drop
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input id="blueprint-upload" type="file" className="hidden" accept="image/*" onChange={(e) => {
+                                                    field.onChange(e.target.files);
+                                                    handleBlueprintChange(e);
+                                                }}/>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    <Button type="button" className="w-full" onClick={handleAnalyzeBlueprint} disabled={isAnalyzing || !blueprintPreview}>
+                                        {isAnalyzing ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                                        {isAnalyzing ? 'Analyzing...' : 'Extract Dimensions with AI'}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                            <div className="space-y-4">
+                               <FormField
+                                control={form.control}
+                                name="roofLength"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Roof Length (meters)</FormLabel>
+                                    <FormControl>
+                                    <div className="relative">
+                                        <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input type="number" placeholder="Enter length" {...field} className="pl-9"/>
+                                    </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="roofWidth"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Roof Width (meters)</FormLabel>
+                                    <FormControl>
+                                    <div className="relative">
+                                        <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input type="number" placeholder="Enter width" {...field} className="pl-9" />
+                                    </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            </div>
                         </div>
                       </div>
                       <div className="space-y-4">
