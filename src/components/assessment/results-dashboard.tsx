@@ -51,6 +51,7 @@ type ResultsDashboardProps = {
     };
     localRainfall: number;
     groundwaterLevel: number;
+    principalAquifer: string;
     rooftopArea: number;
     annualDemand: number;
   };
@@ -161,7 +162,36 @@ export function ResultsDashboard({ data }: ResultsDashboardProps) {
                     <h4 className="font-semibold">Groundwater Level</h4>
                     <p className="text-muted-foreground">{data.groundwaterLevel} meters deep</p>
                 </div>
+                 <div>
+                    <h4 className="font-semibold">Principal Aquifer</h4>
+                    <p className="text-muted-foreground">{data.principalAquifer}</p>
+                </div>
             </CardContent>
+          </Card>
+       </div>
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2">
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-primary"><DollarSign /> Cost & Savings</CardTitle>
+                  <CardDescription>An overview of the estimated costs and benefits over 10 years.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <CostBenefitChart 
+                    investment={data.costEstimation.investment} 
+                    savings={data.costEstimation.annualSavings} />
+              </CardContent>
+          </Card>
+          <Card className="bg-primary/10 flex flex-col">
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-primary">
+                      <Info className="h-5 w-5"/>
+                      Did you know?
+                  </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 flex-grow">
+                  <p>💧 A typical 100 sq. meter rooftop in a region with 800mm of rain can harvest over 60,000 liters of water annually.</p>
+                  <p>💧 Rainwater harvesting not only reduces water bills but also helps mitigate urban flooding by reducing stormwater runoff.</p>
+              </CardContent>
           </Card>
        </div>
     </div>

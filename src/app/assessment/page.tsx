@@ -17,6 +17,7 @@ const MOCK_GROUNDWATER_LEVEL = 10; // meters
 const WATER_DEMAND_PER_PERSON = 135; // liters/day
 const COST_PER_CUBIC_METER_STORAGE_RCC = 4000;
 const COST_OF_WATER_PER_KL = 20; // INR per 1000 liters
+const MOCK_PRINCIPAL_AQUIFER = 'Phreatic, Fissured & Weathered Formations';
 
 async function getAnnualPrecipitation(latitude: number, longitude: number): Promise<number> {
     try {
@@ -95,6 +96,7 @@ async function performAssessment(params: AssessmentParams) {
     },
     localRainfall: annualRainfall,
     groundwaterLevel: MOCK_GROUNDWATER_LEVEL,
+    principalAquifer: MOCK_PRINCIPAL_AQUIFER,
     rooftopArea,
     annualDemand: Math.round(annualDemand),
   };
