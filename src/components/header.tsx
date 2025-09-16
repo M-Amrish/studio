@@ -1,4 +1,5 @@
 import { Droplets } from 'lucide-react';
+import { ModeToggle } from './mode-toggle';
 
 export function Header() {
   return (
@@ -11,6 +12,9 @@ export function Header() {
               Hydronix
             </span>
           </a>
+        </div>
+        <div className="flex flex-1 items-center justify-end gap-2">
+            <ModeToggle />
         </div>
       </div>
     </header>
