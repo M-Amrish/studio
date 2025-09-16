@@ -15,6 +15,7 @@ import {
   Loader2,
   Upload,
   Sparkles,
+  ChevronDown,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -38,6 +39,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { extractDimensionsFromBlueprint } from '@/app/actions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   projectName: z.string().min(2, {
@@ -50,6 +52,9 @@ const formSchema = z.object({
     message: 'Must have at least 1 family member.',
   }),
   blueprint: z.any().optional(),
+  rooftopType: z.string({
+    required_error: "Please select a rooftop type."
+  }),
   roofLength: z.coerce.number().positive({
     message: 'Roof length must be a positive number.',
   }),
@@ -315,6 +320,29 @@ export default function AssessmentPage() {
                                 </CardContent>
                             </Card>
                             <div className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="rooftopType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Rooftop Type</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a rooftop type" />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="flat">Flat / Terrace</SelectItem>
+                                                <SelectItem value="sloped">Sloped</SelectItem>
+                                                <SelectItem value="tiled">Tiled</SelectItem>
+                                                <SelectItem value="metal">Metal Sheet</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                <FormField
                                 control={form.control}
                                 name="roofLength"

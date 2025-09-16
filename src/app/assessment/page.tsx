@@ -8,6 +8,7 @@ type AssessmentParams = {
   familyMembers: string;
   roofLength: string;
   roofWidth: string;
+  rooftopType: string;
   tankSpaceLength: string;
   tankSpaceWidth: string;
 };
@@ -15,18 +16,33 @@ type AssessmentParams = {
 // Mock local data
 const MOCK_RAINFALL = 800; // mm/year
 const MOCK_GROUNDWATER_LEVEL = 10; // meters
-const RUNOFF_COEFFICIENT = 0.8;
 const WATER_DEMAND_PER_PERSON = 135; // liters/day
 const COST_PER_CUBIC_METER_STORAGE_RCC = 4000;
 const COST_OF_WATER_PER_KL = 20; // INR per 1000 liters
+
+function getRunoffCoefficient(rooftopType: string) {
+    switch (rooftopType) {
+        case 'flat':
+            return 0.7;
+        case 'sloped':
+            return 0.8;
+        case 'tiled':
+            return 0.85;
+        case 'metal':
+            return 0.9;
+        default:
+            return 0.8;
+    }
+}
 
 function performAssessment(params: AssessmentParams) {
   const roofLength = parseFloat(params.roofLength);
   const roofWidth = parseFloat(params.roofWidth);
   const familyMembers = parseInt(params.familyMembers);
+  const runoffCoefficient = getRunoffCoefficient(params.rooftopType);
 
   const rooftopArea = roofLength * roofWidth;
-  const waterCollectionEstimate = rooftopArea * (MOCK_RAINFALL / 1000) * RUNOFF_COEFFICIENT * 1000; // in liters
+  const waterCollectionEstimate = rooftopArea * (MOCK_RAINFALL / 1000) * runoffCoefficient * 1000; // in liters
 
   const dailyDemand = familyMembers * WATER_DEMAND_PER_PERSON;
   const annualDemand = dailyDemand * 365;
@@ -68,9 +84,12 @@ export default function AssessmentResultsPage({
   const assessmentData = performAssessment(searchParams);
 
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <ResultsDashboard data={assessmentData} />
-    </Suspense>
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 className="text-3xl font-bold tracking-tight text-primary mb-6">Feasibility Report</h1>
+        <Suspense fallback={<DashboardSkeleton />}>
+            <ResultsDashboard data={assessmentData} />
+        </Suspense>
+    </div>
   );
 }
 
