@@ -172,7 +172,7 @@ export function ResultsDashboard({ data }: ResultsDashboardProps) {
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2">
               <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-primary"><DollarSign /> Cost & Savings</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-primary">Cost & Savings</CardTitle>
                   <CardDescription>An overview of the estimated costs and benefits over 10 years.</CardDescription>
               </CardHeader>
               <CardContent>
