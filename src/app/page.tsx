@@ -118,7 +118,7 @@ export default function AssessmentPage() {
       <Card className="shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-headline text-primary">
-            RTRWH Potential Assessment
+            Hydronix
           </CardTitle>
           <CardDescription className="text-base">
             Assess Rooftop Rainwater Harvesting and Artificial Recharge Potential

@@ -8,7 +8,7 @@ export function Header() {
           <a className="mr-6 flex items-center space-x-2" href="/">
             <Droplets className="h-6 w-6 text-primary" />
             <span className="font-bold sm:inline-block">
-              Jal Shakti Assessment App
+              Hydronix
             </span>
           </a>
         </div>

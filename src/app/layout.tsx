@@ -4,7 +4,7 @@ import { Header } from '@/components/header';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Jal Shakti Assessment App',
+  title: 'Hydronix',
   description: 'On-spot assessment of Rooftop Rainwater Harvesting (RTRWH) and Artificial Recharge (AR) potential.',
 };
 
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning={true}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
