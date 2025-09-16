@@ -71,6 +71,10 @@ export default function AssessmentPage() {
       projectName: '',
       location: '',
       familyMembers: 1,
+      roofLength: '',
+      roofWidth: '',
+      tankSpaceLength: '',
+      tankSpaceWidth: '',
     },
   });
 
@@ -116,7 +120,6 @@ export default function AssessmentPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
       <main className="flex flex-1 flex-col items-center justify-center p-4">
         <div className="w-full max-w-4xl">
           <Card className="shadow-lg">
