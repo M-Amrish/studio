@@ -4,14 +4,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import {
   MapPin,
   Users,
   Building,
   Ruler,
   Info,
+  LocateFixed,
+  Loader2
 } from 'lucide-react';
-
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -58,6 +61,8 @@ const formSchema = z.object({
 
 export default function AssessmentPage() {
   const router = useRouter();
+  const { toast } = useToast();
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,6 +72,39 @@ export default function AssessmentPage() {
       familyMembers: 1,
     },
   });
+
+  function handleGetCurrentLocation() {
+    if (!navigator.geolocation) {
+      toast({
+        variant: 'destructive',
+        title: 'Geolocation Not Supported',
+        description: 'Your browser does not support geolocation.',
+      });
+      return;
+    }
+
+    setIsFetchingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        // For simplicity, we'll use lat/lng. A real app would use a reverse geocoding service.
+        form.setValue('location', `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, { shouldValidate: true });
+        setIsFetchingLocation(false);
+        toast({
+          title: 'Location Fetched',
+          description: 'Your current location has been filled in.',
+        });
+      },
+      (error) => {
+        setIsFetchingLocation(false);
+        toast({
+          variant: 'destructive',
+          title: 'Unable to Fetch Location',
+          description: error.message || 'Please ensure location services are enabled.',
+        });
+      }
+    );
+  }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const params = new URLSearchParams(
@@ -128,9 +166,24 @@ export default function AssessmentPage() {
                           <FormItem>
                             <FormLabel>Location</FormLabel>
                              <FormControl>
-                              <div className="relative">
+                              <div className="relative flex items-center">
                                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="e.g., Delhi, India" {...field} className="pl-9" />
+                                <Input placeholder="e.g., Delhi, India" {...field} className="pl-9 pr-12" />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                                  onClick={handleGetCurrentLocation}
+                                  disabled={isFetchingLocation}
+                                  aria-label="Get current location"
+                                >
+                                  {isFetchingLocation ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <LocateFixed className="h-4 w-4" />
+                                  )}
+                                </Button>
                               </div>
                             </FormControl>
                             <FormMessage />
