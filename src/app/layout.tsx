@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
   title: 'Hydronix',
@@ -31,6 +32,7 @@ export default function RootLayout({
             disableTransitionOnChange
         >
             <div className="flex min-h-screen w-full flex-col">
+              <Header />
               <main className="flex flex-1 flex-col p-4 md:p-8 lg:p-10">
                 {children}
               </main>

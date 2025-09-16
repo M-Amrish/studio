@@ -15,7 +15,6 @@ import {
   Loader2,
   Upload,
   Sparkles,
-  FileImage,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -38,7 +37,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Header } from '@/components/header';
 import { extractDimensionsFromBlueprint } from '@/app/actions';
 
 const formSchema = z.object({
@@ -174,8 +172,7 @@ export default function AssessmentPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex flex-1 flex-col items-center justify-center p-4">
+    <div className="flex flex-col flex-1 items-center justify-center">
         <div className="w-full max-w-4xl">
           <Card className="shadow-lg">
             <CardHeader className="text-center">
@@ -430,7 +427,6 @@ export default function AssessmentPage() {
               </CardContent>
           </Card>
         </div>
-      </main>
     </div>
   );
 }
