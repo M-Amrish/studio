@@ -18,10 +18,19 @@ import {
   FileText,
   DollarSign,
   Download,
-  ShieldCheck
+  ShieldCheck,
+  Polaroid
 } from 'lucide-react';
 import { PotentialChart } from './potential-chart';
 import { CostBenefitChart } from './cost-benefit-chart';
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer
+} from "recharts";
 
 type ResultsDashboardProps = {
   data: {
@@ -120,7 +129,7 @@ export function ResultsDashboard({ data }: ResultsDashboardProps) {
                 <CardTitle className="flex items-center gap-2 text-primary"><BarChart /> Annual Water Balance</CardTitle>
             </CardHeader>
             <CardContent>
-                <PotentialChart 
+                <PotentialChart
                     harvested={data.waterCollectionEstimate}
                     demand={data.annualDemand}
                     stored={data.optimalTankSize}
@@ -152,39 +161,6 @@ export function ResultsDashboard({ data }: ResultsDashboardProps) {
             </CardContent>
           </Card>
        </div>
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary"><DollarSign /> Cost & Savings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-                 <div>
-                    <h4 className="font-semibold">Estimated Investment</h4>
-                    <p className="text-muted-foreground text-2xl font-bold text-destructive">₹ {data.costEstimation.investment.toLocaleString()}</p>
-                </div>
-                 <div>
-                    <h4 className="font-semibold">Projected Annual Savings</h4>
-                    <p className="text-muted-foreground text-2xl font-bold text-green-600">₹ {data.costEstimation.annualSavings.toLocaleString()}</p>
-                </div>
-                <div>
-                    <h4 className="font-semibold">Return on Investment</h4>
-                    <p className="text-muted-foreground">Approx. {(data.costEstimation.investment / data.costEstimation.annualSavings).toFixed(1)} years</p>
-                </div>
-            </CardContent>
-          </Card>
-          <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary"><ShieldCheck /> Cost-Benefit Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <CostBenefitChart 
-                    investment={data.costEstimation.investment}
-                    savings={data.costEstimation.annualSavings}
-                />
-            </CardContent>
-          </Card>
-       </div>
-
     </div>
   );
 }
