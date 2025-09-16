@@ -391,7 +391,7 @@ export default function AssessmentPage() {
                       </div>
 
                       <Button type="submit" className="w-full text-lg py-6" size="lg">
-                        Get Assessment
+                        Generate Report
                       </Button>
                     </form>
                   </Form>
