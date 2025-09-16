@@ -3,12 +3,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Upload,
-  Sparkles,
-  Loader2,
   MapPin,
   Users,
   Building,
@@ -35,8 +31,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { extractDimensionsAction } from './actions';
 
 const formSchema = z.object({
   projectName: z.string().min(2, {
@@ -63,9 +57,6 @@ const formSchema = z.object({
 });
 
 export default function AssessmentPage() {
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [blueprintDataUri, setBlueprintDataUri] = useState<string | null>(null);
-  const { toast } = useToast();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -76,53 +67,6 @@ export default function AssessmentPage() {
       familyMembers: 1,
     },
   });
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setBlueprintDataUri(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setBlueprintDataUri(null);
-    }
-  };
-
-  const handleExtractDimensions = async () => {
-    if (!blueprintDataUri) {
-      toast({
-        variant: 'destructive',
-        title: 'No Blueprint Selected',
-        description: 'Please upload a blueprint image first.',
-      });
-      return;
-    }
-
-    setIsExtracting(true);
-    try {
-      const result = await extractDimensionsAction(blueprintDataUri);
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      form.setValue('roofLength', result.length ?? 0);
-      form.setValue('roofWidth', result.width ?? 0);
-      toast({
-        title: 'Dimensions Extracted!',
-        description: `Length: ${result.length}m, Width: ${result.width}m.`,
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-      toast({
-        variant: 'destructive',
-        title: 'Extraction Failed',
-        description: errorMessage,
-      });
-    } finally {
-      setIsExtracting(false);
-    }
-  };
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const params = new URLSearchParams(
@@ -216,32 +160,6 @@ export default function AssessmentPage() {
                     <h3 className="font-semibold text-lg text-primary">
                       Building Dimensions
                     </h3>
-                    <div className="p-4 bg-primary/10 rounded-lg space-y-4">
-                      <FormLabel>Upload Building Blueprint</FormLabel>
-                      <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <div className="relative flex-grow w-full">
-                           <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                           <Input id="blueprint" type="file" onChange={handleFileChange} accept="image/*" className="pl-9" />
-                        </div>
-                        <Button
-                          type="button"
-                          onClick={handleExtractDimensions}
-                          disabled={isExtracting || !blueprintDataUri}
-                          className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"
-                        >
-                          {isExtracting ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Sparkles className="mr-2 h-4 w-4" />
-                          )}
-                          Extract with AI
-                        </Button>
-                      </div>
-                       <FormDescription>
-                          Upload a blueprint and our AI will extract the rooftop dimensions for you.
-                       </FormDescription>
-                    </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                        <FormField
                         control={form.control}
