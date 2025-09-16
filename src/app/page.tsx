@@ -82,15 +82,15 @@ export default function AssessmentPage() {
     defaultValues: {
       projectName: '',
       location: '',
-      familyMembers: 1,
-      roofLength: '',
-      roofWidth: '',
-      tankSpaceLength: '',
-      tankSpaceWidth: '',
+      familyMembers: 4,
+      roofLength: 0,
+      roofWidth: 0,
+      tankSpaceLength: 0,
+      tankSpaceWidth: 0,
     },
   });
 
-  function handleGetCurrentLocation() {
+  function handleGetCurrentLocation(isAutomatic = false) {
     if (!navigator.geolocation) {
       toast({
         variant: 'destructive',
@@ -104,13 +104,26 @@ export default function AssessmentPage() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        // For simplicity, we'll use lat/lng. A real app would use a reverse geocoding service.
-        form.setValue('location', `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, { shouldValidate: true });
+        const locationString = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        form.setValue('location', locationString, { shouldValidate: true });
         setIsFetchingLocation(false);
         toast({
           title: 'Location Fetched',
           description: 'Your current location has been filled in.',
         });
+        if(isAutomatic) {
+            // Simulate fetching data from GIS
+            toast({
+                title: "Analyzing Satellite Data...",
+                description: "This is a simulation. In a real app, we'd fetch GIS data."
+            });
+            form.setValue('projectName', 'My Automated Project');
+            form.setValue('rooftopType', 'flat');
+            form.setValue('roofLength', 15);
+            form.setValue('roofWidth', 10);
+            form.setValue('tankSpaceLength', 5);
+            form.setValue('tankSpaceWidth', 4);
+        }
       },
       (error) => {
         setIsFetchingLocation(false);
@@ -146,12 +159,12 @@ export default function AssessmentPage() {
               <Tabs defaultValue="manual" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="manual">Manual Input</TabsTrigger>
-                  <TabsTrigger value="automatic" disabled>
+                  <TabsTrigger value="automatic">
                     Automatic (GIS)
                   </TabsTrigger>
                 </TabsList>
+                <Form {...form}>
                 <TabsContent value="manual">
-                  <Form {...form}>
                     <form
                       onSubmit={form.handleSubmit(onSubmit)}
                       className="space-y-8 mt-6"
@@ -192,7 +205,7 @@ export default function AssessmentPage() {
                                       variant="ghost"
                                       size="icon"
                                       className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                                      onClick={handleGetCurrentLocation}
+                                      onClick={() => handleGetCurrentLocation(false)}
                                       disabled={isFetchingLocation}
                                       aria-label="Get current location"
                                     >
@@ -335,22 +348,43 @@ export default function AssessmentPage() {
                         Generate Report
                       </Button>
                     </form>
-                  </Form>
                 </TabsContent>
                 <TabsContent value="automatic">
-                  <Card className="mt-6">
-                    <CardHeader>
-                      <CardTitle>Coming Soon!</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p>
-                        Our GIS-powered automatic assessment feature is under
-                        development. It will allow you to get instant potential
-                        analysis using satellite imagery. Stay tuned!
-                      </p>
-                    </CardContent>
-                  </Card>
+                    <div className="mt-6 text-center">
+                        <p className="mb-4">Click the button to use your current location to automatically assess rainwater harvesting potential.</p>
+                        <Button onClick={() => handleGetCurrentLocation(true)} disabled={isFetchingLocation} size="lg">
+                            {isFetchingLocation ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <LocateFixed className="mr-2 h-4 w-4" />
+                            )}
+                            Get Assessment with Current Location
+                        </Button>
+
+                        {form.watch('location') && form.watch('roofLength') > 0 && (
+                             <Card className="mt-6 text-left">
+                                <CardHeader>
+                                    <CardTitle>Automatic Assessment Ready</CardTitle>
+                                    <CardDescription>We've estimated your details based on your location. You can now generate the report.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div><span className="font-semibold">Location:</span> {form.watch('location')}</div>
+                                        <div><span className="font-semibold">Roof Area:</span> {form.watch('roofLength')}m x {form.watch('roofWidth')}m</div>
+                                        <div><span className="font-semibold">Family Members:</span> {form.watch('familyMembers')}</div>
+                                        <div><span className="font-semibold">Rooftop Type:</span> {form.watch('rooftopType')}</div>
+                                    </div>
+                                </CardContent>
+                                <CardContent>
+                                    <Button onClick={form.handleSubmit(onSubmit)} className="w-full">
+                                        Generate Full Report
+                                    </Button>
+                                </CardContent>
+                             </Card>
+                        )}
+                    </div>
                 </TabsContent>
+                </Form>
               </Tabs>
             </CardContent>
           </Card>
